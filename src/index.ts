@@ -6,7 +6,6 @@ import * as cass from 'cassandra-driver'
 const promClient = require('prom-client')
 const basicAuth = require('express-basic-auth')
 
-
 const setENV = (name: string, defValue: string): string => {
   return process.env[name] ? process.env[name] : defValue
 }
@@ -18,11 +17,11 @@ const keySpace = setENV('KEYSPACE', 'local')
 const table = setENV('TABLE', 'ref')
 const port = setENV('PORT', '80')
 
-
 // -------------Set the siginterrupt--------------------
 from(['SIGINT', 'SIGTERM']).pipe(
   mergeMap(s => fromEvent(process, s))
 ).subscribe((d:any) => {
+  console.info(`Shutdown because of receiving a signal`)
   process.exit(d[1])
 })
 
@@ -33,15 +32,8 @@ const register = new promClient.Registry()
 
 const client = new cass.Client({ contactPoints: cassServers.split(','), localDataCenter: dataCenter, keyspace: keySpace });
 const query = `SELECT room, content, ts FROM ${table}`;
-from(client.execute(query, [])).pipe(
-  mergeMap(v => from(v.rows))
-).subscribe({
-  next: x => {
-    console.info(x.keys())
-  },
-})
-// When received terminate signal, must delete the program.
 
+// ---------------------Express-----------------------------
 const app = express()
 // --------------------Middlewares--------------------------
 // app.use(basicAuth({
@@ -49,7 +41,10 @@ const app = express()
 //   challenge: true,
 //   realm: 'Imb4T3st4pp',
 // }))
-
+app.use((req, _, next) => {
+  console.info(`${new Date().toLocaleString()},${req.method},${req.url},${req.headers['x-forwarded-for'] || req.connection.remoteAddress}`)
+  next()
+})
 app.get('/data/index.json', (req, res) => {
   res.set({"Content-Type": "text/csv"})
   from(client.execute(query, [])).pipe(
@@ -65,14 +60,18 @@ app.get('/data/index.json', (req, res) => {
   })
 })
 
+
+
 // ----------------Prometheus counter----------------
 const c = new promClient.Counter({
 	name: 'test_counter',
 	help: 'Example of a counter',
   labelNames: ['code'],
-  registers: [register]
+  registers: []
 })
 
+promClient.collectDefaultMetrics({ register })
+register.registerMetric(c)
 app.get('/metrics', (req, res) => {
   c.inc({code: 200})
   res.set('Content-Type', register.contentType)

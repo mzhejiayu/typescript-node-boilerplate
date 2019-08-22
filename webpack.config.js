@@ -1,9 +1,10 @@
 const path = require('path');
 let mode = process.env.ENV ? process.env.ENV : "development"
+let devtool = process.env.DEVTOOL ? process.env.DEVTOOL : "cheap-module-eval-source-map"
 module.exports = {
   mode: mode,
   entry: './src/index.ts',
-  devtool: 'source-map',
+  devtool: devtool,
   module: {
     rules: [
       {
