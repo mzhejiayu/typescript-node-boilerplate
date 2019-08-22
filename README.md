@@ -6,8 +6,16 @@ This project is born in Easybroadcast. The Typescript gives us the ability to wr
 
 However, this project is in its early phase, and the test framework are not included yet.
 
+## Features
+1. Prometheus
+2. Expressjs
+3. Typescript
+4. Webpack
+5. Cassandra
+
 ## Advantage
 1. With the mode development, the webpack build speed can be fast. 
+2. Easy to deploy with docker. `docker run -it -v $(shell pwd)/dist:/node -e ENV=env node:12.9.0-alpine node /node/index.bundle.js`. The dependencies will be packaged by webpack, resulting in a single javascript file to run. 
 
 ## Usage
 1. `yarn install` to install the dependencies. 
