@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist/",
+    "noImplicitAny": true,
+    "module": "es6",
+    "target": "es6",
+    "jsx": "react",
+    "allowJs": false,
+    "alwaysStrict": true,
+    "sourceMap": true,
+    "moduleResolution": "node",
+    "declaration": true,
+  },
+  "include": [
+    "node_modules/rxjs/**/*.d.ts",
+  ],
+  "lib": ["DOM"]
+}
